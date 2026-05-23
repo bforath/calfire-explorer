@@ -69,23 +69,11 @@
 		// Hide all other dots so only the selected fire is visible on the map
 		markersLayer.remove();
 
-		// Outer ring — slow pulse
 		window.L.circleMarker([incident.lat, incident.lng], {
-			radius: getDotRadius(incident.acres) + 26,
+			radius: getDotRadius(incident.acres) + 12,
 			fillColor: 'transparent',
 			color: '#00d4ff',
-			weight: 3,
-			opacity: 1,
-			fillOpacity: 0,
-			className: 'selected-incident-ring-outer'
-		}).addTo(selectedMarkerLayer);
-
-		// Inner ring — faster pulse, offset so the two rings feel independent
-		window.L.circleMarker([incident.lat, incident.lng], {
-			radius: getDotRadius(incident.acres) + 14,
-			fillColor: 'transparent',
-			color: '#00d4ff',
-			weight: 5,
+			weight: 4,
 			opacity: 1,
 			fillOpacity: 0,
 			className: 'selected-incident-ring'
@@ -144,14 +132,13 @@
 
 <style>
 	:global(.selected-incident-ring) {
-		animation: pulse-ring 1s ease-in-out infinite;
-	}
-	:global(.selected-incident-ring-outer) {
-		animation: pulse-ring 1s ease-in-out infinite 0.5s; /* offset by half a cycle */
+		transform-box: fill-box;       /* scale relative to the circle's own center */
+		transform-origin: center;
+		animation: pulse-ring 1.4s ease-in-out infinite;
 	}
 	@keyframes pulse-ring {
-		0%   { opacity: 1;   }
-		50%  { opacity: 0;   }
-		100% { opacity: 1;   }
+		0%   { transform: scale(1);    opacity: 1;   }
+		50%  { transform: scale(1.6);  opacity: 0.2; }
+		100% { transform: scale(1);    opacity: 1;   }
 	}
 </style>
