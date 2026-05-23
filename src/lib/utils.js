@@ -2,6 +2,20 @@
 // No Svelte dependencies — these can be tested without a DOM.
 
 /**
+ * Returns a display-ready string for a given column key and incident.
+ * Centralizes all formatting logic so TableRow doesn't need to know which
+ * columns need special formatting.
+ */
+export function formatColumnValue(columnKey, incident) {
+	switch (columnKey) {
+		case 'acres':       return formatAcres(incident.acres);
+		case 'containment': return formatPercent(incident.containment);
+		case 'startDate':   return formatDate(incident.startDate);
+		default:            return incident[columnKey] ?? '—';
+	}
+}
+
+/**
  * Formats a large number as a compact human-readable string.
  * 1234567 becomes "1.2M", 45000 becomes "45K"
  */

@@ -9,6 +9,17 @@ export const DEFAULT_ROWS_PER_PAGE = 25;
 export const DEFAULT_SORT_COLUMN = 'year';
 export const DEFAULT_SORT_DIRECTION = 'desc';
 
+// Column definitions — key maps to the field name on a normalized incident object
+export const TABLE_COLUMNS = [
+	{ key: 'name',        label: 'Incident Name', sortable: true, frozen: true  },
+	{ key: 'county',      label: 'County',        sortable: true, frozen: false },
+	{ key: 'year',        label: 'Year',          sortable: true, frozen: false },
+	{ key: 'cause',       label: 'Cause',         sortable: true, frozen: false },
+	{ key: 'acres',       label: 'Acres',         sortable: true, frozen: false },
+	{ key: 'containment', label: 'Containment',   sortable: true, frozen: false },
+	{ key: 'startDate',   label: 'Start Date',    sortable: true, frozen: false }
+];
+
 // Density
 export const DENSITY_OPTIONS = ['compact', 'comfortable', 'spacious'];
 export const DEFAULT_DENSITY = 'comfortable';
