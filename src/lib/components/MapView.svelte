@@ -57,10 +57,17 @@
 		}
 	}
 
-	function highlightSelectedIncident(leafletMap, selectedMarkerLayer, incident) {
+	function highlightSelectedIncident(leafletMap, markersLayer, selectedMarkerLayer, incident) {
 		selectedMarkerLayer.clearLayers();
 
-		if (!incident || incident.lat == null || incident.lng == null) return;
+		if (!incident || incident.lat == null || incident.lng == null) {
+			// No selection — show all dots again
+			if (!leafletMap.hasLayer(markersLayer)) markersLayer.addTo(leafletMap);
+			return;
+		}
+
+		// Hide all other dots so only the selected fire is visible on the map
+		markersLayer.remove();
 
 		window.L.circleMarker([incident.lat, incident.lng], {
 			radius: getDotRadius(incident.acres) + 10,
@@ -110,7 +117,7 @@
 		});
 
 		const unsubscribeSelected = uiState.subscribe((currentState) => {
-			highlightSelectedIncident(leafletMap, selectedMarkerLayer, currentState.selectedIncident);
+			highlightSelectedIncident(leafletMap, markersLayer, selectedMarkerLayer, currentState.selectedIncident);
 		});
 
 		return () => {
