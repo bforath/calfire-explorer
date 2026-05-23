@@ -24,15 +24,20 @@
 		return Math.min(4 + Math.log10(acres) * 3, 24);
 	}
 
-	// Rebuild all markers whenever the filtered set changes
+	// Rebuild all markers whenever the filtered set changes.
+	// IMPORTANT: read all reactive values ($filteredIncidents, $uiState) BEFORE
+	// any early returns — Svelte 5 only tracks dependencies that were actually
+	// read during the effect's execution. An early return before a $store read
+	// means that store will never be tracked, so the effect won't re-run when it changes.
 	$effect(() => {
-		if (!leafletMap || !markersLayer) return;
-
-		markersLayer.clearLayers();
-
 		const incidentsWithCoordinates = $filteredIncidents.filter(
 			(incident) => incident.lat != null && incident.lng != null
 		);
+		const currentSelectedIncident = $uiState.selectedIncident;
+
+		if (!leafletMap || !markersLayer) return;
+
+		markersLayer.clearLayers();
 
 		for (const incident of incidentsWithCoordinates) {
 			const marker = window.L.circleMarker([incident.lat, incident.lng], {
@@ -66,10 +71,11 @@
 
 	// When the selected incident changes, zoom to it and show a pulsing highlight ring
 	$effect(() => {
+		const incident = $uiState.selectedIncident; // read before any early return
+
 		if (!leafletMap || !selectedMarkerLayer) return;
 
 		selectedMarkerLayer.clearLayers();
-		const incident = $uiState.selectedIncident;
 
 		if (!incident || incident.lat == null || incident.lng == null) return;
 
