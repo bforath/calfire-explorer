@@ -132,11 +132,11 @@
 
 <style>
 	:global(.selected-incident-ring) {
-		animation: pulse-ring 1.5s ease-out infinite;
+		animation: pulse-ring 1.2s ease-in-out infinite;
 	}
 	@keyframes pulse-ring {
-		0%   { opacity: 0.8; transform: scale(1); }
-		70%  { opacity: 0;   transform: scale(1.4); }
-		100% { opacity: 0;   transform: scale(1.4); }
+		0%   { opacity: 0.9; }
+		50%  { opacity: 0.2; }
+		100% { opacity: 0.9; }
 	}
 </style>
