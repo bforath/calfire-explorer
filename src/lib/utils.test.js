@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { formatAcres, formatDate, formatPercent, matchesFilters, sortIncidents } from './utils.js';
+import { formatAcres, formatDate, formatDuration, matchesFilters, sortIncidents } from './utils.js';
 
 // A minimal incident fixture reused across tests
-const base = {
+const baseIncident = {
 	id: 1,
 	name: 'Camp Fire',
-	county: 'Butte',
+	unit: 'BTU',
 	year: 2018,
-	cause: 'Equipment',
+	cause: 'Equipment Use',
 	acres: 153336,
-	containment: 100,
+	durationDays: 17,
 	startDate: '2018-11-08',
 	endDate: '2018-11-25'
 };
@@ -26,55 +26,58 @@ describe('formatDate', () => {
 	it('returns dash for null', () => expect(formatDate(null)).toBe('—'));
 });
 
-describe('formatPercent', () => {
-	it('formats a number as percent', () => expect(formatPercent(85)).toBe('85%'));
-	it('rounds decimals', () => expect(formatPercent(84.6)).toBe('85%'));
-	it('returns dash for null', () => expect(formatPercent(null)).toBe('—'));
+describe('formatDuration', () => {
+	it('formats a single day', () => expect(formatDuration(1)).toBe('1 day'));
+	it('formats multiple days', () => expect(formatDuration(45)).toBe('45 days'));
+	it('returns dash for null', () => expect(formatDuration(null)).toBe('—'));
 });
 
 describe('matchesFilters', () => {
 	const noFilters = {
-		counties: [],
+		units: [],
 		yearRange: [1900, 2100],
 		causes: [],
 		acresRange: [0, Infinity],
-		containmentRange: [0, 100],
 		search: ''
 	};
 
 	it('passes when no filters are active', () => {
-		expect(matchesFilters(base, noFilters)).toBe(true);
+		expect(matchesFilters(baseIncident, noFilters)).toBe(true);
 	});
 
-	it('filters by county', () => {
-		const filters = { ...noFilters, counties: ['Butte'] };
-		expect(matchesFilters(base, filters)).toBe(true);
-		expect(matchesFilters({ ...base, county: 'Napa' }, filters)).toBe(false);
+	it('filters by unit', () => {
+		const filters = { ...noFilters, units: ['BTU'] };
+		expect(matchesFilters(baseIncident, filters)).toBe(true);
+		expect(matchesFilters({ ...baseIncident, unit: 'LPF' }, filters)).toBe(false);
 	});
 
 	it('filters by year range', () => {
 		const filters = { ...noFilters, yearRange: [2015, 2020] };
-		expect(matchesFilters(base, filters)).toBe(true);
-		expect(matchesFilters({ ...base, year: 2010 }, filters)).toBe(false);
+		expect(matchesFilters(baseIncident, filters)).toBe(true);
+		expect(matchesFilters({ ...baseIncident, year: 2010 }, filters)).toBe(false);
 	});
 
 	it('filters by search string', () => {
 		const filters = { ...noFilters, search: 'camp' };
-		expect(matchesFilters(base, filters)).toBe(true);
-		expect(matchesFilters({ ...base, name: 'Dixie Fire' }, filters)).toBe(false);
+		expect(matchesFilters(baseIncident, filters)).toBe(true);
+		expect(matchesFilters({ ...baseIncident, name: 'Dixie Fire' }, filters)).toBe(false);
 	});
 });
 
 describe('sortIncidents', () => {
 	const incidents = [
-		{ ...base, name: 'Camp Fire', acres: 153336, year: 2018 },
-		{ ...base, name: 'Dixie Fire', acres: 963000, year: 2021 },
-		{ ...base, name: 'Mendocino Complex', acres: 459000, year: 2018 }
+		{ ...baseIncident, name: 'Camp Fire',          acres: 153336,  year: 2018 },
+		{ ...baseIncident, name: 'Dixie Fire',          acres: 963000,  year: 2021 },
+		{ ...baseIncident, name: 'Mendocino Complex',   acres: 459000,  year: 2018 }
 	];
 
 	it('sorts by acres ascending', () => {
 		const sorted = sortIncidents(incidents, 'acres', 'asc');
-		expect(sorted.map((i) => i.name)).toEqual(['Camp Fire', 'Mendocino Complex', 'Dixie Fire']);
+		expect(sorted.map((incident) => incident.name)).toEqual([
+			'Camp Fire',
+			'Mendocino Complex',
+			'Dixie Fire'
+		]);
 	});
 
 	it('sorts by name descending', () => {

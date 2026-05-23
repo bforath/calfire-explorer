@@ -8,10 +8,10 @@
  */
 export function formatColumnValue(columnKey, incident) {
 	switch (columnKey) {
-		case 'acres':       return formatAcres(incident.acres);
-		case 'containment': return formatPercent(incident.containment);
-		case 'startDate':   return formatDate(incident.startDate);
-		default:            return incident[columnKey] ?? '—';
+		case 'acres':        return formatAcres(incident.acres);
+		case 'durationDays': return formatDuration(incident.durationDays);
+		case 'startDate':    return formatDate(incident.startDate);
+		default:             return incident[columnKey] ?? '—';
 	}
 }
 
@@ -41,12 +41,12 @@ export function formatDate(dateString) {
 }
 
 /**
- * Formats a containment percentage.
- * 85 becomes "85%", null becomes "—"
+ * Formats a duration in days as a readable string.
+ * 1 becomes "1 day", 45 becomes "45 days", null becomes "—"
  */
-export function formatPercent(value) {
-	if (value == null) return '—';
-	return `${Math.round(value)}%`;
+export function formatDuration(days) {
+	if (days == null) return '—';
+	return days === 1 ? '1 day' : `${days} days`;
 }
 
 /**
@@ -54,9 +54,9 @@ export function formatPercent(value) {
  * Filters stack with AND logic — every active filter must pass.
  */
 export function matchesFilters(incident, filters) {
-	const { counties, yearRange, causes, acresRange, containmentRange, search } = filters;
+	const { units, yearRange, causes, acresRange, search } = filters;
 
-	if (counties.length > 0 && !counties.includes(incident.county)) return false;
+	if (units.length > 0 && !units.includes(incident.unit)) return false;
 
 	if (incident.year !== null) {
 		if (incident.year < yearRange[0] || incident.year > yearRange[1]) return false;
@@ -69,16 +69,11 @@ export function matchesFilters(incident, filters) {
 		if (acresRange[1] !== Infinity && incident.acres > acresRange[1]) return false;
 	}
 
-	if (incident.containment !== null) {
-		if (incident.containment < containmentRange[0]) return false;
-		if (incident.containment > containmentRange[1]) return false;
-	}
-
 	if (search.trim()) {
 		const query = search.toLowerCase();
 		const searchableText = [
 			incident.name,
-			incident.county,
+			incident.unit,
 			incident.cause,
 			String(incident.year ?? '')
 		]

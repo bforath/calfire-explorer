@@ -26,11 +26,10 @@ export const loadingState = writable({ status: 'idle', error: null });
 // ---------------------------------------------------------------------------
 
 export const filters = writable({
-	counties: [],
-	yearRange: [2000, new Date().getFullYear()],
+	units: [],
+	yearRange: [1950, new Date().getFullYear()],
 	causes: [],
 	acresRange: [0, Infinity],
-	containmentRange: [0, 100],
 	search: ''
 });
 
