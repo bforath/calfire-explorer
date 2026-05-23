@@ -8,6 +8,8 @@
 	import StatsBar from '$lib/components/StatsBar.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import MapView from '$lib/components/MapView.svelte';
+	import DetailPanel from '$lib/components/DetailPanel.svelte';
+	import SearchOverlay from '$lib/components/SearchOverlay.svelte';
 
 	onMount(async () => {
 		loadingState.set({ status: 'loading', error: null });
@@ -33,10 +35,19 @@
 				<span class="ml-2 text-sm text-gray-400">California Wildfire Incidents</span>
 			</div>
 		</div>
-		<div class="text-xs text-gray-400">
-			Data: CAL FIRE · California Historic Fire Perimeters
+		<div class="flex items-center gap-4">
+			<button
+				class="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-500 hover:border-gray-300 hover:bg-gray-100 transition-colors"
+				onclick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
+			>
+				<span>Search</span>
+				<kbd class="rounded border border-gray-300 bg-white px-1 text-xs">⌘K</kbd>
+			</button>
+			<span class="text-xs text-gray-400">Data: CAL FIRE · California Historic Fire Perimeters</span>
 		</div>
 	</header>
+
+	<SearchOverlay />
 
 	<!-- Content -->
 	<main class="flex min-h-0 flex-1 flex-col gap-3 p-4">
@@ -66,8 +77,10 @@
 				<div class="flex min-h-0 w-[60%] flex-col">
 					<DataTable />
 				</div>
-				<div class="w-[40%]">
+				<!-- relative here lets DetailPanel use absolute positioning to overlay the map -->
+				<div class="relative w-[40%]">
 					<MapView />
+					<DetailPanel />
 				</div>
 			</div>
 		{/if}
