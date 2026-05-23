@@ -70,11 +70,11 @@
 		markersLayer.remove();
 
 		window.L.circleMarker([incident.lat, incident.lng], {
-			radius: getDotRadius(incident.acres) + 10,
+			radius: getDotRadius(incident.acres) + 14,
 			fillColor: 'transparent',
-			color: getDotColor(incident.acres),
-			weight: 3,
-			opacity: 0.8,
+			color: '#00d4ff',
+			weight: 4,
+			opacity: 1,
 			fillOpacity: 0,
 			className: 'selected-incident-ring'
 		}).addTo(selectedMarkerLayer);
@@ -135,8 +135,8 @@
 		animation: pulse-ring 1.2s ease-in-out infinite;
 	}
 	@keyframes pulse-ring {
-		0%   { opacity: 0.9; }
-		50%  { opacity: 0.2; }
-		100% { opacity: 0.9; }
+		0%   { opacity: 1;   }
+		50%  { opacity: 0.1; }
+		100% { opacity: 1;   }
 	}
 </style>
