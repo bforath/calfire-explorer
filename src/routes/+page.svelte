@@ -7,6 +7,8 @@
 	import { incidents, loadingState } from '$lib/stores.js';
 	import { fetchAllIncidents } from '$lib/api.js';
 	import DataTable from '$lib/components/DataTable.svelte';
+	import StatsBar from '$lib/components/StatsBar.svelte';
+	import FilterBar from '$lib/components/FilterBar.svelte';
 
 	onMount(async () => {
 		loadingState.set({ status: 'loading', error: null });
@@ -49,7 +51,9 @@
 			</div>
 
 		{:else if $loadingState.status === 'success'}
-			<div class="h-full">
+			<div class="flex h-full flex-col gap-3">
+				<FilterBar />
+				<StatsBar />
 				<DataTable />
 			</div>
 		{/if}

@@ -83,9 +83,9 @@ export const summaryStats = derived(filteredIncidents, ($filteredIncidents) => {
 		return {
 			count: 0,
 			totalAcres: 0,
-			countiesAffected: 0,
+			unitsAffected: 0,
 			peakYear: null,
-			mostAffectedCounty: null
+			mostActiveUnit: null
 		};
 	}
 
@@ -94,7 +94,7 @@ export const summaryStats = derived(filteredIncidents, ($filteredIncidents) => {
 		0
 	);
 
-	const countiesAffected = new Set($filteredIncidents.map((incident) => incident.county)).size;
+	const unitsAffected = new Set($filteredIncidents.map((incident) => incident.unit)).size;
 
 	// Year with the most incidents
 	const incidentCountByYear = $filteredIncidents.reduce((accumulator, incident) => {
@@ -106,17 +106,17 @@ export const summaryStats = derived(filteredIncidents, ($filteredIncidents) => {
 			(yearA, yearB) => incidentCountByYear[yearB] - incidentCountByYear[yearA]
 		)[0] ?? null;
 
-	// County with the most incidents
-	const incidentCountByCounty = $filteredIncidents.reduce((accumulator, incident) => {
-		if (incident.county) accumulator[incident.county] = (accumulator[incident.county] ?? 0) + 1;
+	// Unit with the most incidents
+	const incidentCountByUnit = $filteredIncidents.reduce((accumulator, incident) => {
+		if (incident.unit) accumulator[incident.unit] = (accumulator[incident.unit] ?? 0) + 1;
 		return accumulator;
 	}, {});
-	const mostAffectedCounty =
-		Object.keys(incidentCountByCounty).sort(
-			(countyA, countyB) => incidentCountByCounty[countyB] - incidentCountByCounty[countyA]
+	const mostActiveUnit =
+		Object.keys(incidentCountByUnit).sort(
+			(unitA, unitB) => incidentCountByUnit[unitB] - incidentCountByUnit[unitA]
 		)[0] ?? null;
 
-	return { count: $filteredIncidents.length, totalAcres, countiesAffected, peakYear, mostAffectedCounty };
+	return { count: $filteredIncidents.length, totalAcres, unitsAffected, peakYear, mostActiveUnit };
 });
 
 // ---------------------------------------------------------------------------
