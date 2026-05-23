@@ -77,8 +77,9 @@
 				<div class="flex min-h-0 w-[60%] flex-col">
 					<DataTable />
 				</div>
-				<!-- relative here lets DetailPanel use absolute positioning to overlay the map -->
-				<div class="relative w-[40%]">
+				<!-- overflow-hidden clips the detail panel fly transition so it doesn't -->
+				<!-- briefly extend outside the container and trigger a layout-shifting scrollbar -->
+				<div class="relative w-[40%] overflow-hidden">
 					<MapView />
 					<DetailPanel />
 				</div>
