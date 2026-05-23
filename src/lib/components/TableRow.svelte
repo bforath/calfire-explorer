@@ -1,20 +1,14 @@
-<!-- Renders a single incident row. Highlights when selected. -->
-<!-- Clicking the row selects the incident, opening the detail panel. -->
+<!-- Renders a single incident row. Highlights when selected and zooms the map to that fire. -->
 
 <script>
 	import { uiState } from '$lib/stores.js';
 	import { TABLE_COLUMNS } from '$lib/constants.js';
 	import { formatColumnValue } from '$lib/utils.js';
 
-	// $props() is how Svelte 5 receives props — equivalent to defineProps() in Vue 3.
-	// We destructure incident directly out of the props object.
 	let { incident } = $props();
 
-	// $derived() recomputes automatically when its dependencies change —
-	// equivalent to a computed() property in Vue.
 	let isSelected = $derived($uiState.selectedIncident?.id === incident.id);
 
-	// Density controls row padding — compact shows more rows, spacious gives breathing room
 	let rowPaddingClass = $derived({
 		compact:     'py-1 text-xs',
 		comfortable: 'py-2 text-sm',
@@ -29,15 +23,19 @@
 <tr
 	class="cursor-pointer border-b border-gray-100 transition-colors
 		{isSelected
-			? 'bg-orange-50 hover:bg-orange-100'
-			: 'even:bg-gray-50 hover:bg-blue-50'}"
+			? 'bg-orange-50 hover:bg-orange-100 border-l-2 border-l-orange-500'
+			: 'hover:bg-blue-50'}"
 	onclick={selectIncident}
 >
 	{#each TABLE_COLUMNS as column}
 		<td
-			class="px-4 {rowPaddingClass} text-gray-700 whitespace-nowrap
+			class="px-4 {rowPaddingClass} whitespace-nowrap
+				{isSelected ? 'text-gray-900' : 'text-gray-700'}
 				{column.frozen ? 'sticky left-0 z-10 bg-inherit shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]' : ''}"
 		>
+			{#if column.frozen && isSelected}
+				<span class="mr-1 text-orange-500">📍</span>
+			{/if}
 			{formatColumnValue(column.key, incident)}
 		</td>
 	{/each}
