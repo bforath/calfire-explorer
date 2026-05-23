@@ -8,15 +8,6 @@
 
 	let mapContainer = $state(null);
 
-	// Leaflet objects are intentionally plain variables, NOT $state.
-	// Svelte's $state wraps values in a Proxy, which breaks Leaflet's internal
-	// object references silently. We use a separate $state boolean as the
-	// "map is ready" signal that effects can safely depend on.
-	let leafletMap = null;
-	let markersLayer = null;
-	let selectedMarkerLayer = null;
-	let isMapReady = $state(false);
-
 	function getDotColor(acres) {
 		if (acres == null)         return '#94a3b8';
 		if (acres >= ACRES_LARGE)  return '#dc2626';
@@ -30,17 +21,12 @@
 		return Math.min(4 + Math.log10(acres) * 3, 24);
 	}
 
-	// Rebuilds all markers whenever the filtered set or map readiness changes.
-	// All reactive values ($filteredIncidents, isMapReady) are read at the top
-	// so Svelte always tracks them as dependencies regardless of any early returns.
-	$effect(() => {
-		const incidentsWithCoordinates = $filteredIncidents.filter(
+	function rebuildMarkers(leafletMap, markersLayer, incidents) {
+		markersLayer.clearLayers();
+
+		const incidentsWithCoordinates = incidents.filter(
 			(incident) => incident.lat != null && incident.lng != null
 		);
-
-		if (!isMapReady) return;
-
-		markersLayer.clearLayers();
 
 		for (const incident of incidentsWithCoordinates) {
 			const marker = window.L.circleMarker([incident.lat, incident.lng], {
@@ -69,14 +55,9 @@
 		} else {
 			leafletMap.setView([37.5, -119.5], 6);
 		}
-	});
+	}
 
-	// Zooms to the selected incident and shows a pulsing highlight ring.
-	$effect(() => {
-		const incident = $uiState.selectedIncident;
-
-		if (!isMapReady) return;
-
+	function highlightSelectedIncident(leafletMap, selectedMarkerLayer, incident) {
 		selectedMarkerLayer.clearLayers();
 
 		if (!incident || incident.lat == null || incident.lng == null) return;
@@ -101,32 +82,41 @@
 		}).addTo(selectedMarkerLayer);
 
 		leafletMap.flyTo([incident.lat, incident.lng], 9, { duration: 0.8 });
-	});
+	}
 
 	onMount(async () => {
 		const leaflet = await import('leaflet');
 		const L = leaflet.default;
 		await import('leaflet/dist/leaflet.css');
+		window.L = L;
 
-		leafletMap = L.map(mapContainer, { zoomControl: true }).setView([37.5, -119.5], 6);
+		const leafletMap = L.map(mapContainer).setView([37.5, -119.5], 6);
 
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '© OpenStreetMap contributors',
 			maxZoom: 18
 		}).addTo(leafletMap);
 
-		markersLayer = L.layerGroup().addTo(leafletMap);
-		selectedMarkerLayer = L.layerGroup().addTo(leafletMap);
+		// featureGroup instead of layerGroup — featureGroup supports getBounds()
+		// which we need to zoom the map to fit the filtered incident set
+		const markersLayer = L.featureGroup().addTo(leafletMap);
+		const selectedMarkerLayer = L.featureGroup().addTo(leafletMap);
 
-		window.L = L;
-		isMapReady = true; // triggers both effects to run now that Leaflet is ready
+		// Direct store subscriptions — these fire every time the store value changes,
+		// with no dependency tracking complexity. Far more reliable for integrating
+		// non-reactive third-party libraries like Leaflet.
+		const unsubscribeFiltered = filteredIncidents.subscribe((currentFiltered) => {
+			rebuildMarkers(leafletMap, markersLayer, currentFiltered);
+		});
+
+		const unsubscribeSelected = uiState.subscribe((currentState) => {
+			highlightSelectedIncident(leafletMap, selectedMarkerLayer, currentState.selectedIncident);
+		});
 
 		return () => {
-			isMapReady = false;
-			leafletMap?.remove();
-			leafletMap = null;
-			markersLayer = null;
-			selectedMarkerLayer = null;
+			unsubscribeFiltered();
+			unsubscribeSelected();
+			leafletMap.remove();
 		};
 	});
 </script>
