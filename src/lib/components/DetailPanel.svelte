@@ -53,11 +53,10 @@
 				</span>
 			</div>
 			<button
-				class="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
+				class="ml-2 flex-shrink-0 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
 				onclick={close}
-				aria-label="Close"
 			>
-				✕
+				← Show all
 			</button>
 		</div>
 

@@ -16,7 +16,10 @@
 	}[$uiState.density]);
 
 	function selectIncident() {
-		uiState.update((currentState) => ({ ...currentState, selectedIncident: incident }));
+		uiState.update((currentState) => ({
+			...currentState,
+			selectedIncident: currentState.selectedIncident?.id === incident.id ? null : incident
+		}));
 	}
 </script>
 

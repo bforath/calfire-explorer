@@ -99,6 +99,11 @@
 
 		const leafletMap = L.map(mapContainer).setView([37.5, -119.5], 6);
 
+		// Clicking the map background clears the selection and restores all dots
+		leafletMap.on('click', () => {
+			uiState.update((currentState) => ({ ...currentState, selectedIncident: null }));
+		});
+
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '© OpenStreetMap contributors',
 			maxZoom: 18
