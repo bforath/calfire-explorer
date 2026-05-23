@@ -7,9 +7,15 @@
 	import { ACRES_SMALL, ACRES_MEDIUM, ACRES_LARGE } from '$lib/constants.js';
 
 	let mapContainer = $state(null);
-	let leafletMap = $state(null);
-	let markersLayer = $state(null);
-	let selectedMarkerLayer = $state(null);
+
+	// Leaflet objects are intentionally plain variables, NOT $state.
+	// Svelte's $state wraps values in a Proxy, which breaks Leaflet's internal
+	// object references silently. We use a separate $state boolean as the
+	// "map is ready" signal that effects can safely depend on.
+	let leafletMap = null;
+	let markersLayer = null;
+	let selectedMarkerLayer = null;
+	let isMapReady = $state(false);
 
 	function getDotColor(acres) {
 		if (acres == null)         return '#94a3b8';
@@ -24,18 +30,15 @@
 		return Math.min(4 + Math.log10(acres) * 3, 24);
 	}
 
-	// Rebuild all markers whenever the filtered set changes.
-	// IMPORTANT: read all reactive values ($filteredIncidents, $uiState) BEFORE
-	// any early returns — Svelte 5 only tracks dependencies that were actually
-	// read during the effect's execution. An early return before a $store read
-	// means that store will never be tracked, so the effect won't re-run when it changes.
+	// Rebuilds all markers whenever the filtered set or map readiness changes.
+	// All reactive values ($filteredIncidents, isMapReady) are read at the top
+	// so Svelte always tracks them as dependencies regardless of any early returns.
 	$effect(() => {
 		const incidentsWithCoordinates = $filteredIncidents.filter(
 			(incident) => incident.lat != null && incident.lng != null
 		);
-		const currentSelectedIncident = $uiState.selectedIncident;
 
-		if (!leafletMap || !markersLayer) return;
+		if (!isMapReady) return;
 
 		markersLayer.clearLayers();
 
@@ -61,7 +64,6 @@
 			markersLayer.addLayer(marker);
 		}
 
-		// Zoom to fit the filtered set every time filters change
 		if (incidentsWithCoordinates.length > 0) {
 			leafletMap.fitBounds(markersLayer.getBounds(), { padding: [24, 24], maxZoom: 10 });
 		} else {
@@ -69,17 +71,16 @@
 		}
 	});
 
-	// When the selected incident changes, zoom to it and show a pulsing highlight ring
+	// Zooms to the selected incident and shows a pulsing highlight ring.
 	$effect(() => {
-		const incident = $uiState.selectedIncident; // read before any early return
+		const incident = $uiState.selectedIncident;
 
-		if (!leafletMap || !selectedMarkerLayer) return;
+		if (!isMapReady) return;
 
 		selectedMarkerLayer.clearLayers();
 
 		if (!incident || incident.lat == null || incident.lng == null) return;
 
-		// Outer pulsing ring — larger, semi-transparent circle to draw the eye
 		window.L.circleMarker([incident.lat, incident.lng], {
 			radius: getDotRadius(incident.acres) + 10,
 			fillColor: 'transparent',
@@ -90,7 +91,6 @@
 			className: 'selected-incident-ring'
 		}).addTo(selectedMarkerLayer);
 
-		// Solid center dot on top
 		window.L.circleMarker([incident.lat, incident.lng], {
 			radius: getDotRadius(incident.acres),
 			fillColor: getDotColor(incident.acres),
@@ -116,13 +116,15 @@
 		}).addTo(leafletMap);
 
 		markersLayer = L.layerGroup().addTo(leafletMap);
-		selectedMarkerLayer = L.layerGroup().addTo(leafletMap); // always on top
+		selectedMarkerLayer = L.layerGroup().addTo(leafletMap);
 
 		window.L = L;
+		isMapReady = true; // triggers both effects to run now that Leaflet is ready
 
 		return () => {
+			isMapReady = false;
 			leafletMap?.remove();
-			leafletMap = null;        // $state assignment — clears the effects
+			leafletMap = null;
 			markersLayer = null;
 			selectedMarkerLayer = null;
 		};
@@ -132,7 +134,6 @@
 <div class="h-full w-full overflow-hidden rounded-lg border border-gray-200" bind:this={mapContainer}></div>
 
 <style>
-	/* Pulse animation on the selected incident ring */
 	:global(.selected-incident-ring) {
 		animation: pulse-ring 1.5s ease-out infinite;
 	}
