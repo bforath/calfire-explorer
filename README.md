@@ -4,6 +4,8 @@ An interactive data explorer for California wildfire incident history, built wit
 
 **[Live demo →](https://bforath.github.io/calfire-explorer)**
 
+> **Note:** Mobile layout is a work in progress. The core explorer is functional on phones but some views and interactions are optimized for desktop.
+
 ---
 
 ## Features
