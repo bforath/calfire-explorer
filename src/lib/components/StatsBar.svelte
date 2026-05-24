@@ -31,11 +31,13 @@
 	]);
 </script>
 
-<div class="grid grid-cols-5 divide-x divide-gray-200 rounded-lg border border-gray-200 bg-white">
-	{#each statCards as card}
-		<div class="px-4 py-3">
-			<div class="text-xl font-bold text-gray-900">{card.value}</div>
-			<div class="mt-0.5 text-xs text-gray-500">{card.label}</div>
-		</div>
-	{/each}
+<div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+	<div class="grid min-w-max grid-cols-5 divide-x divide-gray-200">
+		{#each statCards as card}
+			<div class="px-3 py-2.5 sm:px-4 sm:py-3">
+				<div class="text-base font-bold text-gray-900 sm:text-xl">{card.value}</div>
+				<div class="mt-0.5 text-xs text-gray-500">{card.label}</div>
+			</div>
+		{/each}
+	</div>
 </div>

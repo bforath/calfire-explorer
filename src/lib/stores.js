@@ -43,7 +43,8 @@ export const uiState = writable({
 	sortColumn: DEFAULT_SORT_COLUMN,
 	sortDirection: DEFAULT_SORT_DIRECTION,
 	currentPage: 1,
-	rowsPerPage: DEFAULT_ROWS_PER_PAGE
+	rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+	activeView: 'explorer' // 'explorer' | 'analytics'
 });
 
 // ---------------------------------------------------------------------------
