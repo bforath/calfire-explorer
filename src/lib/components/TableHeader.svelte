@@ -21,12 +21,12 @@
 	}
 </script>
 
-<thead class="sticky top-0 z-10 border-b border-gray-200">
+<thead class="border-b border-gray-200">
 	<tr>
 		{#each TABLE_COLUMNS as column}
 			<th
-				class="bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap
-					{column.frozen ? 'sticky left-0 z-20' : ''}"
+				class="sticky top-0 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap
+					{column.frozen ? 'left-0 z-20' : ''}"
 			>
 				{#if column.sortable}
 					<button

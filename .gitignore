@@ -1,5 +1,6 @@
 node_modules
 SVELTE_STUDY_GUIDE_CONTEXT.md
+static/incidents.json
 
 # Output
 .output

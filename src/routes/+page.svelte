@@ -34,7 +34,7 @@
 	});
 </script>
 
-<div class="flex h-screen flex-col bg-gray-50">
+<div class="flex min-h-screen flex-col bg-gray-50 md:h-screen">
 	<!-- Header -->
 	<header class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6">
 		<div class="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -78,7 +78,7 @@
 	<SearchOverlay />
 
 	<!-- Content -->
-	<main class="flex min-h-0 flex-1 overflow-hidden">
+	<main class="flex flex-1 md:min-h-0 md:overflow-hidden">
 		{#if $loadingState.status === 'loading'}
 			<div class="flex flex-1 items-center justify-center">
 				<div class="text-center">
@@ -98,7 +98,7 @@
 
 		{:else if $loadingState.status === 'success'}
 			<!-- Explorer — always visible -->
-			<div class="relative flex min-h-0 flex-1 flex-col gap-3 p-4">
+			<div class="relative flex flex-1 flex-col gap-3 p-4 md:min-h-0 md:overflow-hidden">
 
 				<!-- Backdrop — click to close filter sidebar -->
 				{#if sidebarIsOpen}
@@ -133,15 +133,15 @@
 				</div>
 
 				<!-- Table + Map -->
-				<div class="flex min-h-0 flex-1 flex-col gap-3 md:flex-row">
+				<div class="flex flex-col gap-3 md:min-h-0 md:flex-1 md:flex-row">
 					<!-- Map: fixed height on mobile, 40% on desktop -->
 					<!-- isolate contains Leaflet's z-indexes so the filter sidebar renders above it -->
 					<div class="relative isolate h-56 flex-shrink-0 overflow-hidden rounded-lg md:h-auto md:w-[40%]">
 						<MapView />
 						<DetailPanel />
 					</div>
-					<!-- Table: fills remaining space on mobile, 60% on desktop -->
-					<div class="flex min-h-0 flex-1 flex-col md:order-first md:w-[60%]">
+					<!-- Table: explicit min-height on mobile so it has room, flex-1 on desktop -->
+					<div class="flex min-h-80 flex-col md:order-first md:min-h-0 md:flex-1 md:w-[60%]">
 						<DataTable />
 					</div>
 				</div>

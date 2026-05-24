@@ -30,6 +30,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Fetch incident data
+        run: node scripts/fetch-data.js
+
       - name: Build
         run: npm run build
 
