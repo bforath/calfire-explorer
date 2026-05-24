@@ -9,7 +9,7 @@
 	import Pagination from './Pagination.svelte';
 </script>
 
-<div class="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
+<div class="flex h-72 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white md:h-full">
 	<!-- Scrollable table area — header stays sticky within this container -->
 	<div class="overflow-auto flex-1">
 		<table class="w-full border-collapse">
