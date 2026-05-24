@@ -34,9 +34,9 @@
 	});
 </script>
 
-<div class="flex flex-col bg-gray-50 md:h-screen">
+<div class="flex h-dvh flex-col bg-gray-50">
 	<!-- Header -->
-	<header class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6">
+	<header class="flex flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6">
 		<div class="flex min-w-0 items-center gap-2 sm:gap-3">
 			<div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-orange-500">
 				<span class="text-sm font-bold text-white">🔥</span>
@@ -78,7 +78,7 @@
 	<SearchOverlay />
 
 	<!-- Content -->
-	<main class="flex flex-col md:flex-1 md:min-h-0 md:overflow-hidden">
+	<main class="min-h-0 flex-1 overflow-y-auto md:flex md:overflow-hidden">
 		{#if $loadingState.status === 'loading'}
 			<div class="flex flex-1 items-center justify-center">
 				<div class="text-center">
