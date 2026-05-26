@@ -190,7 +190,7 @@
 
 				<!-- Desktop analytics panel — always mounted so charts subscribe to data on load -->
 				<!-- hidden on mobile (display:none), lg:block restores it on desktop -->
-				<div class="hidden flex-shrink-0 overflow-hidden transition-[max-height] duration-300 ease-in-out lg:block {analyticsIsOpen ? 'lg:max-h-[272px]' : 'max-h-0'}">
+				<div class="hidden flex-shrink-0 overflow-hidden transition-[max-height] duration-300 ease-in-out lg:block {analyticsIsOpen ? 'lg:max-h-[360px]' : 'max-h-0'}">
 					<AnalyticsPanel compact={true} />
 				</div>
 

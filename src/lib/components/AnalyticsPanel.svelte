@@ -540,7 +540,7 @@
 				<h3 class="text-xs font-semibold text-gray-800">Unit Risk Score</h3>
 				{#if !compact}<p class="mt-0.5 text-xs text-gray-400">Click a bar to filter · frequency × log(avg acres), normalized 0–100</p>{/if}
 			</div>
-			<div class="min-h-0 flex-1" style="height: {compact ? '160px' : '280px'};">
+			<div class="min-h-0 flex-1" style="height: {compact ? '200px' : '280px'};">
 				<canvas bind:this={riskCanvas}></canvas>
 			</div>
 		</div>
@@ -550,7 +550,7 @@
 				<h3 class="text-xs font-semibold text-gray-800">Fires per Year</h3>
 				{#if !compact}<p class="mt-0.5 text-xs text-gray-400">Click a point to filter to that year</p>{/if}
 			</div>
-			<div class="min-h-0 flex-1" style="height: {compact ? '160px' : '280px'};">
+			<div class="min-h-0 flex-1" style="height: {compact ? '200px' : '280px'};">
 				<canvas bind:this={trendCanvas}></canvas>
 			</div>
 		</div>
@@ -560,7 +560,7 @@
 				<h3 class="text-xs font-semibold text-gray-800">Fires by Cause</h3>
 				{#if !compact}<p class="mt-0.5 text-xs text-gray-400">Click a bar to filter · top 12 causes</p>{/if}
 			</div>
-			<div class="min-h-0 flex-1" style="height: {compact ? '160px' : '280px'};">
+			<div class="min-h-0 flex-1" style="height: {compact ? '200px' : '280px'};">
 				<canvas bind:this={causeCanvas}></canvas>
 			</div>
 		</div>
@@ -570,7 +570,7 @@
 				<h3 class="text-xs font-semibold text-gray-800">Avg Fire Size by Decade</h3>
 				{#if !compact}<p class="mt-0.5 text-xs text-gray-400">Click a point to filter to that decade</p>{/if}
 			</div>
-			<div class="min-h-0 flex-1" style="height: {compact ? '160px' : '280px'};">
+			<div class="min-h-0 flex-1" style="height: {compact ? '200px' : '280px'};">
 				<canvas bind:this={decadeCanvas}></canvas>
 			</div>
 		</div>
