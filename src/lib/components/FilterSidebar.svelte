@@ -13,7 +13,7 @@
 
 	let dataYearMin = $derived(
 		$incidents.length > 0
-			? Math.min(...$incidents.map((incident) => incident.year).filter(Boolean))
+			? Math.max(1950, Math.min(...$incidents.map((incident) => incident.year).filter(Boolean)))
 			: 1950
 	);
 	let currentYear = new Date().getFullYear();
@@ -121,7 +121,7 @@
 	}
 </script>
 
-<aside class="flex h-full w-64 flex-col border-r border-gray-200 bg-white">
+<aside class="flex h-full w-full flex-col border-r border-gray-200 bg-white">
 	<!-- Header -->
 	<div class="flex flex-shrink-0 items-center justify-between border-b border-gray-100 px-4 py-3">
 		<span class="text-sm font-semibold text-gray-800">Filters</span>

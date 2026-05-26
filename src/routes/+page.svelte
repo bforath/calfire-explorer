@@ -80,7 +80,7 @@
 	<SearchOverlay />
 
 	<!-- Context banner -->
-	<div class="flex-shrink-0 border-b border-gray-100 bg-white px-4 py-4 sm:px-6 sm:py-5">
+	<div class="flex-shrink-0 border-b border-gray-100 bg-white px-4 py-6 sm:px-6 sm:py-7">
 		<div class="flex flex-col gap-2.5">
 			<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 				<span class="text-sm font-semibold text-gray-800">California Wildfire Risk Explorer</span>
@@ -96,7 +96,7 @@
 	</div>
 
 	<!-- Content -->
-	<main class="min-h-0 flex-1 overflow-y-auto md:flex md:overflow-hidden">
+	<main class="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
 		{#if $loadingState.status === 'loading'}
 			<div class="flex flex-1 items-center justify-center">
 				<div class="text-center">
@@ -128,27 +128,29 @@
 					<FilterSidebar onClose={() => (sidebarIsOpen = false)} />
 				</div>
 
-				<!-- Filter toggle + stats row -->
-				<div class="flex items-center gap-3">
-					<button
-						onclick={() => (sidebarIsOpen = !sidebarIsOpen)}
-						class="flex flex-shrink-0 items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors
-							{sidebarIsOpen
-								? 'border-orange-300 bg-orange-50 text-orange-700'
-								: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'}"
-					>
+				<StatsBar />
+
+				<!-- Full-width filter button -->
+				<button
+					onclick={() => (sidebarIsOpen = !sidebarIsOpen)}
+					class="flex w-full items-center justify-between rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors
+						{sidebarIsOpen
+							? 'border-orange-300 bg-orange-50 text-orange-700'
+							: 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700'}"
+				>
+					<div class="flex items-center gap-2">
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M9 12h6M11 16h2" />
 						</svg>
 						Filters
 						{#if activeFilterCount > 0}
-							<span class="rounded-full bg-orange-500 px-1.5 py-0.5 text-xs font-bold text-white">{activeFilterCount}</span>
+							<span class="rounded-full bg-orange-500 px-1.5 py-0.5 text-xs font-bold text-white">{activeFilterCount} active</span>
 						{/if}
-					</button>
-					<div class="min-w-0 flex-1">
-						<StatsBar />
 					</div>
-				</div>
+					<svg class="h-4 w-4 transition-transform {sidebarIsOpen ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
 
 				<!-- Table + Map -->
 				<div class="flex flex-col gap-3 md:min-h-0 md:flex-1 md:flex-row">

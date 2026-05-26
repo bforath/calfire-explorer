@@ -330,6 +330,16 @@
 		});
 	}
 
+	function updateRiskChartData(subsetIncidents) {
+		if (!riskChart) return;
+		const newRiskScores = computeUnitRiskScores(subsetIncidents, 15);
+		unitRiskScoresData = newRiskScores;
+		topRiskUnit = newRiskScores[0]?.unit ?? '—';
+		riskChart.data.labels = newRiskScores.map((entry) => entry.unit);
+		riskChart.data.datasets[0].data = newRiskScores.map((entry) => entry.riskScore);
+		riskChart.update('none');
+	}
+
 	function updateDependentChartData(subsetIncidents) {
 		if (!trendChart || !causeChart || !decadeChart) return;
 
@@ -398,9 +408,14 @@
 
 		const unsubscribeFilters = filters.subscribe((currentFilters) => {
 			if (allIncidentsData.length > 0) {
+				const yearFilteredIncidents = allIncidentsData.filter((incident) =>
+					!incident.year ||
+					(incident.year >= currentFilters.yearRange[0] && incident.year <= currentFilters.yearRange[1])
+				);
 				const subsetIncidents = currentFilters.units.length > 0
-					? allIncidentsData.filter((incident) => currentFilters.units.includes(incident.unit))
-					: allIncidentsData;
+					? yearFilteredIncidents.filter((incident) => currentFilters.units.includes(incident.unit))
+					: yearFilteredIncidents;
+				updateRiskChartData(yearFilteredIncidents);
 				updateDependentChartData(subsetIncidents);
 			}
 			updateAllChartColors(currentFilters);
