@@ -9,9 +9,14 @@
 	import Pagination from './Pagination.svelte';
 </script>
 
-<div class="flex h-72 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white md:h-full">
-	<!-- Scrollable table area — header stays sticky within this container -->
-	<div class="overflow-auto flex-1">
+<div class="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white md:h-full">
+	<!-- On mobile the table expands to full height so the page scroll handles it.   -->
+	<!-- On desktop the container has a defined height and the table scrolls within. -->
+	<!-- Two wrappers: outer handles vertical scroll on desktop; inner handles      -->
+	<!-- horizontal scroll. Separating them avoids the CSS spec quirk where         -->
+	<!-- overflow-x:auto forces overflow-y:auto on the same element.                -->
+	<div class="flex-1 md:overflow-y-auto">
+		<div class="overflow-x-auto">
 		<table class="w-full border-collapse">
 			<TableHeader />
 			<tbody>
@@ -32,6 +37,7 @@
 				{/each}
 			</tbody>
 		</table>
+		</div>
 	</div>
 
 	<Pagination total={$filteredIncidents.length} />

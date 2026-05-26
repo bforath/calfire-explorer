@@ -2,6 +2,8 @@
 
 <script>
 	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import { incidents, loadingState, filters } from '$lib/stores.js';
 	import { fetchAllIncidents } from '$lib/api.js';
 	import DataTable from '$lib/components/DataTable.svelte';
@@ -77,6 +79,22 @@
 
 	<SearchOverlay />
 
+	<!-- Context banner -->
+	<div class="flex-shrink-0 border-b border-gray-100 bg-white px-4 py-4 sm:px-6 sm:py-5">
+		<div class="flex flex-col gap-2.5">
+			<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+				<span class="text-sm font-semibold text-gray-800">California Wildfire Risk Explorer</span>
+				<span class="text-xs text-gray-400">23,000+ CAL FIRE incidents · 1950–present · Data: CAL FIRE Historic Fire Perimeters via ArcGIS</span>
+			</div>
+			<div class="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-gray-500">
+				<span>🗺️ Map fires by location &amp; size</span>
+				<span>🔍 Filter by cause, unit, or year</span>
+				<span>📊 Click <span class="font-medium text-gray-700">Risk Analytics</span> above to explore trends — click any chart bar to cross-filter the map and table</span>
+				<span>⚡ Built to explore how historical fire data can inform utility-scale wildfire risk planning</span>
+			</div>
+		</div>
+	</div>
+
 	<!-- Content -->
 	<main class="min-h-0 flex-1 overflow-y-auto md:flex md:overflow-hidden">
 		{#if $loadingState.status === 'loading'}
@@ -145,9 +163,32 @@
 					</div>
 				</div>
 
-				<!-- Analytics panel — slides up from the bottom when toggled -->
-				<!-- Always rendered so charts subscribe to data on load; height animates via max-height -->
-				<div class="flex-shrink-0 overflow-hidden transition-[max-height] duration-300 ease-in-out {analyticsIsOpen ? 'max-h-[272px]' : 'max-h-0'}">
+				<!-- Mobile analytics overlay — full-screen sheet, only shown when open -->
+				{#if analyticsIsOpen}
+					<div
+						transition:fly={{ y: 600, opacity: 0, duration: 320, easing: cubicOut }}
+						class="fixed inset-0 z-50 flex flex-col bg-white lg:hidden"
+					>
+						<div class="flex flex-shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3">
+							<span class="text-sm font-semibold text-gray-800">Risk Analytics</span>
+							<button
+								onclick={() => (analyticsIsOpen = false)}
+								class="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+							>
+								<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+								</svg>
+							</button>
+						</div>
+						<div class="flex-1 overflow-y-auto">
+							<AnalyticsPanel compact={false} />
+						</div>
+					</div>
+				{/if}
+
+				<!-- Desktop analytics panel — always mounted so charts subscribe to data on load -->
+				<!-- hidden on mobile (display:none), lg:block restores it on desktop -->
+				<div class="hidden flex-shrink-0 overflow-hidden transition-[max-height] duration-300 ease-in-out lg:block {analyticsIsOpen ? 'lg:max-h-[272px]' : 'max-h-0'}">
 					<AnalyticsPanel compact={true} />
 				</div>
 
