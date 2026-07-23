@@ -7,6 +7,7 @@
 	import { ACRES_SMALL, ACRES_MEDIUM, ACRES_LARGE } from '$lib/constants.js';
 
 	let mapContainer = $state(null);
+	let pendingMoveEnd = null;
 
 	function getDotColor(acres) {
 		if (acres == null)         return '#94a3b8';
@@ -58,36 +59,50 @@
 	}
 
 	function highlightSelectedIncident(leafletMap, markersLayer, selectedMarkerLayer, incident) {
-		selectedMarkerLayer.clearLayers();
+		// Cancel any post-animation setup that hasn't fired yet
+		if (pendingMoveEnd) {
+			leafletMap.off('moveend', pendingMoveEnd);
+			pendingMoveEnd = null;
+		}
 
 		if (!incident || incident.lat == null || incident.lng == null) {
-			// No selection — show all dots again
+			// No selection — clear highlight and restore all dots
+			selectedMarkerLayer.clearLayers();
 			if (!leafletMap.hasLayer(markersLayer)) markersLayer.addTo(leafletMap);
 			return;
 		}
 
-		// Hide all other dots so only the selected fire is visible on the map
-		markersLayer.remove();
+		// If coming from no selection, all dots are visible — leave them during the
+		// fly so the SVG zoom transform doesn't scale the new highlight marker.
+		// If coming from a prior selection, leave the old highlight visible so
+		// the transition goes directly from dot to dot without a flash of all dots.
+		// Either way, the swap happens in pendingMoveEnd once the animation settles.
+		pendingMoveEnd = () => {
+			pendingMoveEnd = null;
+			markersLayer.remove();
+			selectedMarkerLayer.clearLayers();
 
-		window.L.circleMarker([incident.lat, incident.lng], {
-			radius: getDotRadius(incident.acres) + 12,
-			fillColor: 'transparent',
-			color: '#00d4ff',
-			weight: 4,
-			opacity: 1,
-			fillOpacity: 0,
-			className: 'selected-incident-ring'
-		}).addTo(selectedMarkerLayer);
+			window.L.circleMarker([incident.lat, incident.lng], {
+				radius: getDotRadius(incident.acres) + 12,
+				fillColor: 'transparent',
+				color: '#00d4ff',
+				weight: 4,
+				opacity: 1,
+				fillOpacity: 0,
+				className: 'selected-incident-ring'
+			}).addTo(selectedMarkerLayer);
 
-		window.L.circleMarker([incident.lat, incident.lng], {
-			radius: getDotRadius(incident.acres),
-			fillColor: getDotColor(incident.acres),
-			color: '#fff',
-			weight: 2,
-			opacity: 1,
-			fillOpacity: 1
-		}).addTo(selectedMarkerLayer);
+			window.L.circleMarker([incident.lat, incident.lng], {
+				radius: getDotRadius(incident.acres),
+				fillColor: getDotColor(incident.acres),
+				color: '#fff',
+				weight: 2,
+				opacity: 1,
+				fillOpacity: 1
+			}).addTo(selectedMarkerLayer);
+		};
 
+		leafletMap.once('moveend', pendingMoveEnd);
 		leafletMap.flyTo([incident.lat, incident.lng], 9, { duration: 0.8 });
 	}
 
