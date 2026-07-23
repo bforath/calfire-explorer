@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { formatAcres, formatDate, formatDuration, matchesFilters, sortIncidents } from './utils.js';
+import { computeAcresTrend, computeProjectedCost } from './analytics.js';
 
 // A minimal incident fixture reused across tests
 const baseIncident = {
@@ -92,11 +93,6 @@ describe('sortIncidents', () => {
 	});
 });
 
-import {
-	computeAcresTrend,
-	computeProjectedCost
-} from './analytics.js';
-
 describe('computeAcresTrend', () => {
 	it('marks all historical points with projected: false', () => {
 		const incidentData = [
@@ -176,6 +172,14 @@ describe('computeAcresTrend', () => {
 		];
 		const result = computeAcresTrend(incidentData, 0);
 		expect(result[0].acres).toBe(1500);
+	});
+
+	it('returns only the historical point when there is only one year of data', () => {
+		const incidentData = [{ year: 2000, acres: 1000 }];
+		const result = computeAcresTrend(incidentData, 5);
+		expect(result.length).toBe(1);
+		expect(result[0].projected).toBe(false);
+		expect(result[0].acres).toBe(1000);
 	});
 });
 

@@ -130,7 +130,7 @@ export function computeAcresTrend(incidents, projectionYears = 10) {
 		.map(([year, acres]) => ({ year: Number(year), acres, projected: false }))
 		.sort((pointA, pointB) => pointA.year - pointB.year);
 
-	if (historical.length === 0) return [];
+	if (historical.length < 2) return historical;
 
 	// Ordinary least squares linear regression
 	const pointCount = historical.length;
