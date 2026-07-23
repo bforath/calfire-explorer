@@ -17,12 +17,16 @@
 	let sidebarIsOpen = $state(false);
 	let analyticsIsOpen = $state(false);
 
-	let activeFilterCount = $derived(
-		($filters.units.length > 0 ? 1 : 0) +
-		($filters.causes.length > 0 ? 1 : 0) +
-		($filters.acresRange[0] > 0 || $filters.acresRange[1] !== Infinity ? 1 : 0) +
-		($filters.yearRange[0] > 1950 || $filters.yearRange[1] < new Date().getFullYear() ? 1 : 0)
-	);
+	function countActiveFilters(currentFilters) {
+		let count = 0;
+		if (currentFilters.units.length > 0) count++;
+		if (currentFilters.causes.length > 0) count++;
+		if (currentFilters.acresRange[0] > 0 || currentFilters.acresRange[1] !== Infinity) count++;
+		if (currentFilters.yearRange[0] > 1950 || currentFilters.yearRange[1] < new Date().getFullYear()) count++;
+		return count;
+	}
+
+	let activeFilterCount = $derived(countActiveFilters($filters));
 
 	onMount(async () => {
 		loadingState.set({ status: 'loading', error: null });
@@ -73,6 +77,12 @@
 				<span class="hidden sm:inline">Search</span>
 				<kbd class="hidden rounded border border-gray-300 bg-white px-1 text-xs sm:inline">⌘K</kbd>
 			</button>
+			<a
+				href="/methodology"
+				class="hidden rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 sm:flex sm:px-3 sm:text-sm"
+			>
+				Methodology
+			</a>
 			<span class="hidden text-xs text-gray-400 sm:inline">Data: CAL FIRE · California Historic Fire Perimeters</span>
 		</div>
 	</header>
