@@ -154,6 +154,16 @@ describe('computeAcresTrend', () => {
 		expect(result[0].year).toBe(2001);
 	});
 
+	it('skips incidents with year before 1950', () => {
+		const incidentData = [
+			{ year: 1930, acres: 5000 },
+			{ year: 2000, acres: 1000 }
+		];
+		const result = computeAcresTrend(incidentData, 0);
+		expect(result.length).toBe(1);
+		expect(result[0].year).toBe(2000);
+	});
+
 	it('returns empty array for empty input', () => {
 		expect(computeAcresTrend([], 5)).toEqual([]);
 	});
