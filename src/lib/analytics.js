@@ -108,3 +108,62 @@ export function computeAcresByDecade(incidents) {
 		}))
 		.sort((entryA, entryB) => entryA.decade - entryB.decade);
 }
+
+/**
+ * Groups total acres burned by year (1950–present), fits a linear regression
+ * to the year-vs-acres series, and extends it projectionYears into the future.
+ *
+ * Returns a flat array of { year, acres, projected } objects sorted by year.
+ * Historical points carry projected: false; forecast points carry projected: true.
+ * Projected acres are clamped to zero (regression can go negative in dry years).
+ */
+export function computeAcresTrend(incidents, projectionYears = 10) {
+	const acresByYear = {};
+
+	for (const incident of incidents) {
+		if (incident.year == null || incident.acres == null) continue;
+		if (incident.year < 1950) continue;
+		acresByYear[incident.year] = (acresByYear[incident.year] ?? 0) + incident.acres;
+	}
+
+	const historical = Object.entries(acresByYear)
+		.map(([year, acres]) => ({ year: Number(year), acres, projected: false }))
+		.sort((pointA, pointB) => pointA.year - pointB.year);
+
+	if (historical.length < 2) return historical;
+
+	// Ordinary least squares linear regression
+	const pointCount = historical.length;
+	const sumX = historical.reduce((total, point) => total + point.year, 0);
+	const sumY = historical.reduce((total, point) => total + point.acres, 0);
+	const sumXY = historical.reduce((total, point) => total + point.year * point.acres, 0);
+	const sumX2 = historical.reduce((total, point) => total + point.year * point.year, 0);
+
+	const slope = (pointCount * sumXY - sumX * sumY) / (pointCount * sumX2 - sumX * sumX);
+	const intercept = (sumY - slope * sumX) / pointCount;
+
+	const lastYear = historical[historical.length - 1].year;
+	const projected = [];
+	for (let yearOffset = 1; yearOffset <= projectionYears; yearOffset++) {
+		const year = lastYear + yearOffset;
+		const acres = Math.max(0, Math.round(slope * year + intercept));
+		projected.push({ year, acres, projected: true });
+	}
+
+	return [...historical, ...projected];
+}
+
+/**
+ * Converts an acreage trend (output of computeAcresTrend) into estimated
+ * suppression cost by multiplying each year's acres by costPerAcre.
+ *
+ * Returns { year, cost, projected } objects — same shape and ordering as input.
+ * The projected flag is preserved from the input.
+ */
+export function computeProjectedCost(acresTrend, costPerAcre = 2500) {
+	return acresTrend.map(({ year, acres, projected }) => ({
+		year,
+		cost: acres * costPerAcre,
+		projected
+	}));
+}

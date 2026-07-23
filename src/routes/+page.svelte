@@ -4,6 +4,8 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
+	import { get } from 'svelte/store';
+	import { base } from '$app/paths';
 	import { incidents, loadingState, filters } from '$lib/stores.js';
 	import { fetchAllIncidents } from '$lib/api.js';
 	import DataTable from '$lib/components/DataTable.svelte';
@@ -16,15 +18,28 @@
 
 	let sidebarIsOpen = $state(false);
 	let analyticsIsOpen = $state(false);
+	let analysisMenuOpen = $state(false);
+	let analysisMenuRef = null;
 
-	let activeFilterCount = $derived(
-		($filters.units.length > 0 ? 1 : 0) +
-		($filters.causes.length > 0 ? 1 : 0) +
-		($filters.acresRange[0] > 0 || $filters.acresRange[1] !== Infinity ? 1 : 0) +
-		($filters.yearRange[0] > 1950 || $filters.yearRange[1] < new Date().getFullYear() ? 1 : 0)
-	);
+	function handleWindowClick(event) {
+		if (analysisMenuRef && !analysisMenuRef.contains(event.target)) {
+			analysisMenuOpen = false;
+		}
+	}
+
+	function countActiveFilters(currentFilters) {
+		let count = 0;
+		if (currentFilters.units.length > 0) count++;
+		if (currentFilters.causes.length > 0) count++;
+		if (currentFilters.acresRange[0] > 0 || currentFilters.acresRange[1] !== Infinity) count++;
+		if (currentFilters.yearRange[0] > 1950 || currentFilters.yearRange[1] < new Date().getFullYear()) count++;
+		return count;
+	}
+
+	let activeFilterCount = $derived(countActiveFilters($filters));
 
 	onMount(async () => {
+		if (get(loadingState).status !== 'idle') return;
 		loadingState.set({ status: 'loading', error: null });
 		try {
 			const allIncidents = await fetchAllIncidents();
@@ -35,6 +50,8 @@
 		}
 	});
 </script>
+
+<svelte:window onclick={handleWindowClick} />
 
 <div class="flex h-dvh flex-col bg-gray-50">
 	<!-- Header -->
@@ -65,6 +82,38 @@
 					<span class="rounded-full bg-orange-500 px-1.5 py-0.5 text-xs font-bold text-white">{activeFilterCount}</span>
 				{/if}
 			</button>
+			<div class="relative hidden sm:block" bind:this={analysisMenuRef}>
+				<button
+					onclick={() => (analysisMenuOpen = !analysisMenuOpen)}
+					class="flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm
+						{analysisMenuOpen
+							? 'border-gray-300 bg-gray-50 text-gray-900'
+							: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'}"
+				>
+					Analysis
+					<svg class="h-3.5 w-3.5 text-gray-400 transition-transform {analysisMenuOpen ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
+				{#if analysisMenuOpen}
+					<div class="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+						<a
+							href="{base}/methodology"
+							onclick={() => (analysisMenuOpen = false)}
+							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+						>
+							Methodology
+						</a>
+						<a
+							href="{base}/cost-projections"
+							onclick={() => (analysisMenuOpen = false)}
+							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+						>
+							Cost &amp; Projections
+						</a>
+					</div>
+				{/if}
+			</div>
 			<button
 				class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-sm text-gray-500 hover:border-gray-300 hover:bg-gray-100 transition-colors sm:gap-2 sm:px-3"
 				onclick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
