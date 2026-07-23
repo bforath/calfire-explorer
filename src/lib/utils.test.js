@@ -91,3 +91,114 @@ describe('sortIncidents', () => {
 		expect(incidents).toEqual(original);
 	});
 });
+
+import {
+	computeAcresTrend,
+	computeProjectedCost
+} from './analytics.js';
+
+describe('computeAcresTrend', () => {
+	it('marks all historical points with projected: false', () => {
+		const incidentData = [
+			{ year: 2000, acres: 1000 },
+			{ year: 2001, acres: 2000 },
+			{ year: 2002, acres: 3000 }
+		];
+		const result = computeAcresTrend(incidentData, 0);
+		expect(result.every((point) => point.projected === false)).toBe(true);
+	});
+
+	it('appends the correct number of projected points with projected: true', () => {
+		const incidentData = [
+			{ year: 2000, acres: 1000 },
+			{ year: 2001, acres: 2000 }
+		];
+		const result = computeAcresTrend(incidentData, 3);
+		const projectedPoints = result.filter((point) => point.projected === true);
+		expect(projectedPoints.length).toBe(3);
+	});
+
+	it('projected years start immediately after the last historical year', () => {
+		const incidentData = [
+			{ year: 2000, acres: 1000 },
+			{ year: 2001, acres: 2000 },
+			{ year: 2002, acres: 3000 }
+		];
+		const result = computeAcresTrend(incidentData, 5);
+		const projectedYears = result.filter((point) => point.projected).map((point) => point.year);
+		expect(projectedYears[0]).toBe(2003);
+		expect(projectedYears.every((year) => year > 2002)).toBe(true);
+	});
+
+	it('projects a higher value than the last historical point when data is consistently increasing', () => {
+		const incidentData = [
+			{ year: 2000, acres: 1000 },
+			{ year: 2001, acres: 2000 },
+			{ year: 2002, acres: 3000 },
+			{ year: 2003, acres: 4000 }
+		];
+		const result = computeAcresTrend(incidentData, 1);
+		const historicalPoints = result.filter((point) => !point.projected);
+		const projectedPoints = result.filter((point) => point.projected);
+		expect(projectedPoints[0].acres).toBeGreaterThan(historicalPoints[historicalPoints.length - 1].acres);
+	});
+
+	it('skips incidents with null year or null acres', () => {
+		const incidentData = [
+			{ year: null, acres: 1000 },
+			{ year: 2000, acres: null },
+			{ year: 2001, acres: 2000 }
+		];
+		const result = computeAcresTrend(incidentData, 0);
+		expect(result.length).toBe(1);
+		expect(result[0].year).toBe(2001);
+	});
+
+	it('returns empty array for empty input', () => {
+		expect(computeAcresTrend([], 5)).toEqual([]);
+	});
+
+	it('sums acres across multiple incidents in the same year', () => {
+		const incidentData = [
+			{ year: 2000, acres: 1000 },
+			{ year: 2000, acres: 500 },
+			{ year: 2001, acres: 2000 }
+		];
+		const result = computeAcresTrend(incidentData, 0);
+		expect(result[0].acres).toBe(1500);
+	});
+});
+
+describe('computeProjectedCost', () => {
+	it('multiplies acres by the cost per acre', () => {
+		const trend = [{ year: 2000, acres: 1000, projected: false }];
+		const result = computeProjectedCost(trend, 2500);
+		expect(result[0].cost).toBe(2_500_000);
+	});
+
+	it('preserves the projected flag from input', () => {
+		const trend = [
+			{ year: 2000, acres: 1000, projected: false },
+			{ year: 2001, acres: 1200, projected: true }
+		];
+		const result = computeProjectedCost(trend, 2500);
+		expect(result[0].projected).toBe(false);
+		expect(result[1].projected).toBe(true);
+	});
+
+	it('uses a default cost per acre of 2500 when not specified', () => {
+		const trend = [{ year: 2000, acres: 100, projected: false }];
+		const result = computeProjectedCost(trend);
+		expect(result[0].cost).toBe(250_000);
+	});
+
+	it('preserves the year on each output point', () => {
+		const trend = [{ year: 2023, acres: 500, projected: false }];
+		const result = computeProjectedCost(trend, 2500);
+		expect(result[0].year).toBe(2023);
+	});
+
+	it('returns empty array for empty input', () => {
+		expect(computeProjectedCost([])).toEqual([]);
+	});
+});
