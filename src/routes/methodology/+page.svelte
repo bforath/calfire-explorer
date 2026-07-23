@@ -1,7 +1,7 @@
 <!-- Methodology page — data pipeline, field mapping, data quality, and cost projections. -->
 
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { incidents, loadingState } from '$lib/stores.js';
 	import { fetchAllIncidents } from '$lib/api.js';
@@ -176,7 +176,7 @@
 			}
 		}
 
-		const unsubscribeIncidents = incidents.subscribe((allIncidentsData) => {
+		const unsubscribeIncidents = incidents.subscribe(async (allIncidentsData) => {
 			if (allIncidentsData.length === 0) return;
 
 			totalRecords = allIncidentsData.length;
@@ -196,6 +196,10 @@
 
 			acresChart?.destroy();
 			costChart?.destroy();
+
+			// Wait for Svelte to flush DOM — canvases may not be mounted yet if
+			// the loading state just changed from 'loading' to 'success' this tick
+			await tick();
 
 			buildAcresChart(Chart, acresTrend);
 			buildCostChart(Chart, costTrend);
