@@ -2,6 +2,7 @@
 
 <script>
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import { incidents, loadingState } from '$lib/stores.js';
 	import { fetchAllIncidents } from '$lib/api.js';
 	import { computeAcresTrend, computeProjectedCost } from '$lib/analytics.js';
@@ -164,9 +165,7 @@
 		});
 
 		// Trigger a fetch if the user landed directly on this page (store not yet populated)
-		let currentLoadingState;
-		loadingState.subscribe((state) => { currentLoadingState = state; })();
-		if (currentLoadingState.status === 'idle') {
+		if (get(loadingState).status === 'idle') {
 			loadingState.set({ status: 'loading', error: null });
 			try {
 				const allIncidentsData = await fetchAllIncidents();
@@ -342,11 +341,11 @@
 				</div>
 			</div>
 
+			<!-- TODO: replace $2,500/acre with a linked citation from the FRAP annual report before publishing -->
 			<p class="mt-4 text-xs text-gray-400">
-				Cost estimates use a $2,500/acre suppression cost benchmark sourced from CAL FIRE's Fire and Resource
-				Assessment Program (FRAP) — verify and link the specific report URL before publishing. Dollar values are
-				modeled estimates derived from acreage data, not reported expenditures. Projection uses ordinary least
-				squares linear regression on the full 1950–present series.
+				Cost estimates use a $2,500/acre suppression cost benchmark (CAL FIRE FRAP). Dollar values are modeled
+				estimates derived from acreage data, not reported expenditures. Projection uses ordinary least squares
+				linear regression on the full 1950–present series.
 			</p>
 		</section>
 
