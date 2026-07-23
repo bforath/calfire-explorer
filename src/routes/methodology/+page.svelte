@@ -56,6 +56,7 @@
 	};
 
 	function buildAcresChart(Chart, acresTrend) {
+		if (!acresCanvas) return;
 		const historicalCount = acresTrend.filter((point) => !point.projected).length;
 
 		acresChart = new Chart(acresCanvas, {
@@ -102,6 +103,7 @@
 	}
 
 	function buildCostChart(Chart, costTrend) {
+		if (!costCanvas) return;
 		const historicalCount = costTrend.filter((point) => !point.projected).length;
 
 		costChart = new Chart(costCanvas, {
@@ -158,6 +160,7 @@
 		const unsubscribeLoadingState = loadingState.subscribe((state) => {
 			isLoading = state.status === 'loading';
 			if (state.status === 'error') loadError = state.error;
+			else loadError = null;
 		});
 
 		// Trigger a fetch if the user landed directly on this page (store not yet populated)
@@ -226,15 +229,7 @@
 
 	<main class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
 
-		{#if isLoading}
-			<div class="flex items-center justify-center py-24">
-				<div class="h-8 w-8 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500"></div>
-			</div>
-		{:else if loadError}
-			<div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>
-		{:else}
-
-		<!-- Section 1: Data Pipeline -->
+		<!-- Section 1: Data Pipeline — always rendered, no dynamic data -->
 		<section class="mb-14">
 			<h2 class="mb-1 text-xl font-bold text-gray-900">Data Pipeline</h2>
 			<p class="mb-8 text-sm text-gray-500">How raw ArcGIS API data becomes the normalized incident model powering this app.</p>
@@ -252,7 +247,7 @@
 			</div>
 		</section>
 
-		<!-- Section 2: Field Mapping -->
+		<!-- Section 2: Field Mapping — always rendered, no dynamic data -->
 		<section class="mb-14">
 			<h2 class="mb-1 text-xl font-bold text-gray-900">Field Mapping</h2>
 			<p class="mb-6 text-sm text-gray-500">Every field in the normalized incident model, with its ArcGIS source and the transformation applied.</p>
@@ -280,6 +275,15 @@
 				</table>
 			</div>
 		</section>
+
+		<!-- Sections 3 & 4 are data-dependent — gated on loading/error state -->
+		{#if isLoading}
+			<div class="flex items-center justify-center py-24">
+				<div class="h-8 w-8 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500"></div>
+			</div>
+		{:else if loadError}
+			<div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>
+		{:else}
 
 		<!-- Section 3: Data Quality -->
 		<section class="mb-14">
