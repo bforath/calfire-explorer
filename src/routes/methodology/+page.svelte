@@ -39,12 +39,18 @@
 	let percentMissingAcres = $state(0);
 	let isLoading = $state(false);
 	let loadError = $state(null);
+	let activeTab = $state('acres');
 
 	// Canvas element references — plain variables, not $state (Chart.js must not be proxied)
 	let acresCanvas = null;
 	let costCanvas = null;
 	let acresChart = null;
 	let costChart = null;
+
+	// Stored so tab switches can rebuild the active chart without re-fetching
+	let ChartConstructor = null;
+	let acresTrendData = [];
+	let costTrendData = [];
 
 	const sharedChartOptions = {
 		responsive: true,
@@ -153,9 +159,22 @@
 		});
 	}
 
+	async function switchTab(tab) {
+		activeTab = tab;
+		await tick();
+		if (tab === 'acres') {
+			acresChart?.destroy();
+			buildAcresChart(ChartConstructor, acresTrendData);
+		} else {
+			costChart?.destroy();
+			buildCostChart(ChartConstructor, costTrendData);
+		}
+	}
+
 	onMount(async () => {
 		const { Chart, registerables } = await import('chart.js');
 		Chart.register(...registerables);
+		ChartConstructor = Chart;
 
 		// Track loading state for spinner/error display
 		const unsubscribeLoadingState = loadingState.subscribe((state) => {
@@ -191,8 +210,8 @@
 			const missingAcresCount = allIncidentsData.filter((incident) => incident.acres == null).length;
 			percentMissingAcres = Math.round((missingAcresCount / allIncidentsData.length) * 100);
 
-			const acresTrend = computeAcresTrend(allIncidentsData);
-			const costTrend = computeProjectedCost(acresTrend, COST_PER_ACRE);
+			acresTrendData = computeAcresTrend(allIncidentsData);
+			costTrendData = computeProjectedCost(acresTrendData, COST_PER_ACRE);
 
 			acresChart?.destroy();
 			costChart?.destroy();
@@ -201,8 +220,11 @@
 			// the loading state just changed from 'loading' to 'success' this tick
 			await tick();
 
-			buildAcresChart(Chart, acresTrend);
-			buildCostChart(Chart, costTrend);
+			if (activeTab === 'acres') {
+				buildAcresChart(Chart, acresTrendData);
+			} else {
+				buildCostChart(Chart, costTrendData);
+			}
 		});
 
 		return () => {
@@ -328,21 +350,35 @@
 				Solid lines show historical estimates; dashed gray lines show the projection.
 			</p>
 
-			<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+			<div class="mb-4 flex w-fit gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
+				<button
+					onclick={() => switchTab('acres')}
+					class="rounded-md px-4 py-1.5 text-sm font-medium transition-colors {activeTab === 'acres' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
+				>
+					Acres Burned
+				</button>
+				<button
+					onclick={() => switchTab('cost')}
+					class="rounded-md px-4 py-1.5 text-sm font-medium transition-colors {activeTab === 'cost' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}"
+				>
+					Estimated Cost
+				</button>
+			</div>
+
+			<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+				{#if activeTab === 'acres'}
 					<h3 class="mb-1 text-sm font-semibold text-gray-800">Acres Burned per Year</h3>
 					<p class="mb-4 text-xs text-gray-400">Total acres across all incidents, 1950–present + 10-year projection</p>
 					<div style="height: 280px;">
 						<canvas bind:this={acresCanvas}></canvas>
 					</div>
-				</div>
-				<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+				{:else}
 					<h3 class="mb-1 text-sm font-semibold text-gray-800">Estimated Suppression Cost</h3>
 					<p class="mb-4 text-xs text-gray-400">Acres × ${COST_PER_ACRE.toLocaleString()}/acre benchmark + 10-year projection</p>
 					<div style="height: 280px;">
 						<canvas bind:this={costCanvas}></canvas>
 					</div>
-				</div>
+				{/if}
 			</div>
 
 			<!-- TODO: replace $2,500/acre with a linked citation from the FRAP annual report before publishing -->
